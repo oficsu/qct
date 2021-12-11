@@ -19,11 +19,13 @@ target_sources(
     ${PROJECT_NAME}
     PRIVATE
         ${SOURCES}
-        ${HEADERS}
-    @if '%{use-conan}'
-        conanfile.txt
-    @endif
-        %{JS: value('add-readme') && "readme.md" })
+        ${HEADERS}%{JS:
+            [
+                \{ "var": "use-conan", "file": "conanfile.txt" \},
+                \{ "var": "add-readme", "file": "readme.md" \}
+            ].map(e => value(e.var) && ("\\n        " + e.file))
+             .join('')
+        })
 
 source_group(sources FILES ${HEADERS} ${SOURCES})
 @if '%{use-conan}'
