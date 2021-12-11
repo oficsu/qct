@@ -11,23 +11,73 @@
 
     "options":
     [
-        { "key": "main-name", "value": "%{JS: 'main.' + Util.preferredSuffix('text/x-c++src')}" },
         {
-            "key": "main-location",
+            "key": "is-hybrid-pitchfork",
             "value": "%{JS:
-                value('project-layout') == 'simple'
-                        ? '%{main-name}'
-                        : value('project-layout') == 'canonical project structure'
-                            ? '%{ProjectName}/' + '%{main-name}'
-                            : 'src/' + '%{main-name}'
+                value('project-layout') === 'pitchfork' &&
+                value('project-type') === 'hybrid project'
             }"
         },
-        { "key": "is-extended-layouts-list", "value": "%{JS: value('project-type') === 'application' }" },
+        {
+            "key": "is-designated-name",
+            "value": "%{JS:
+                %{is-hybrid-pitchfork} &&
+                ( value('additional-pitchfork-options') == 'designated' ||
+                  value('additional-pitchfork-options') == 'src')
+            }"
+        },
+
+        {
+            "key": "canonical-module-path",
+            "value": "%{JS:
+                value('project-type') == 'application'
+                        ? '%{ProjectName}/main'
+                        : 'apps/%{ProjectName}/main'
+            }"
+        },
+        {
+            "key": "pitchfork-module-path",
+            "value": "%{JS:
+                value('project-type') == 'application'
+                        ? 'src/main'
+                        : value('project-type') != 'hybrid project'
+                            ? 'LOGIC ERROR: MAIN IS NOT ALLOWED IN LIBRARY-ONLY PROJECT TYPES'
+                            : value('additional-pitchfork-options') == 'submodule'
+                                ? 'apps/%{ProjectName}/src/main'
+                                : value('additional-pitchfork-options') == 'apps'
+                                    ? 'apps/%{ProjectName}'
+                                    : value('additional-pitchfork-options') == 'designated'
+                                        ? 'apps/%{ProjectName}.main'
+                                        : value('additional-pitchfork-options') == 'src'
+                                            ? 'src/%{ProjectName}.main'
+                                            : 'LOGIC ERROR: UNEXPECTED MODULE PATH'
+            }"
+        },
+        {
+            "key": "main-cpp-prefix",
+            "value": "%{JS:
+                value('project-layout') == 'simple' && value('project-type') == 'application'
+                        ? 'main'
+                        : value('project-layout') == 'canonical'
+                            ? '%{canonical-module-path}'
+                            : value('project-layout') == 'pitchfork'
+                                ? '%{pitchfork-module-path}'
+                                : 'LOGIC ERROR: UNEXPECTED PROJECT LAYOUT'
+            }"
+        },
+        {
+            "key": "main-ext", "value": "%{JS: '.' + Util.preferredSuffix('text/x-c++src') }"
+        },
+        {
+            "key": "main-path",
+            "value": "%{JS: '%{main-cpp-prefix}' + '%{main-ext}' }"
+        },
+        { "key": "is-app", "value": "%{JS: value('project-type') === 'application' }" },
         {
             "key": "project-layout",
-            "value": "%{JS: %{is-extended-layouts-list}
-                          ? value('project-layout-1')
-                          : value('project-layout-2')
+            "value": "%{JS: %{is-app}
+                          ? value('app-project-layout')
+                          : value('non-app-project-layout')
                      }"
         },
         { "key": "packages", "value": "%{JS: JSON.stringify([
@@ -180,28 +230,32 @@
                                 "trToolTip": "Prepare header-only library"
                             },
                             {
-                                "trKey": "Super project",
-                                "value": "super project",
-                                "trToolTip": "Super project with lots of modules"
+                                "trKey": "Hybrid super project",
+                                "value": "hybrid project",
+                                "trToolTip": "Hybrid super project with lots of modules (apps and libraries)"
                             }
                         ],
                         "disabledIndex": 0
                     }
                 },
+
+
+
                 {
-                    "name": "workaround-spacer-1",
+                    "name": "app-project-layout-workaround-spacer",
                     "type": "Spacer",
-                    "visible": "%{is-extended-layouts-list}",
+                    "visible": "%{is-app}",
                     "data":
                     {
                         "factor": 2
                     }
                 },
+
                 {
-                    "name": "project-layout-label-1",
+                    "name": "app-project-layout-label",
                     "type": "Label",
                     "span": false,
-                    "visible": "%{is-extended-layouts-list}",
+                    "visible": "%{is-app}",
                     "data":
                     {
                         "wordWrap": true,
@@ -209,36 +263,38 @@
                     }
                 },
                 {
-                    "name": "project-layout-1",
+                    "name": "app-project-layout",
                     "trDisplayName": "",
                     "type": "ComboBox",
-                    "visible": "%{is-extended-layouts-list}",
+                    "visible": "%{is-app}",
                     "data":
                     {
                         "items": [
                             {
                                 "trKey": "Simple",
                                 "value": "simple",
-                                "trToolTip": "Minimalistic hello-world cmake project"
+                                "trToolTip": "Minimalistic hello-world project"
                             },
                             {
                                 "trKey": "Canonical Project Structure",
-                                "value": "canonical project structure",
+                                "value": "canonical",
                                 "trToolTip": "P1204 Canonical Project Structure"
                             },
                             {
-                                "trKey": "Pitchfork",
+                                "trKey": "The Pitchfork Layout",
                                 "value": "pitchfork",
-                                "trToolTip": "Pitchfork variation, keep headers and sources together in <project name> directory"
+                                "trToolTip": "The Pitchfork Layout"
                             }
                         ]
                     }
                 },
+
+
                 {
-                    "name": "project-layout-label-2",
+                    "name": "non-app-project-layout-label",
                     "type": "Label",
                     "span": false,
-                    "visible": "%{JS: ! %{is-extended-layouts-list} }",
+                    "visible": "%{JS: ! %{is-app} }",
                     "data":
                     {
                         "wordWrap": true,
@@ -246,35 +302,107 @@
                     }
                 },
                 {
-                    "name": "project-layout-2",
+                    "name": "non-app-project-layout",
                     "trDisplayName": "",
                     "type": "ComboBox",
-                    "visible": "%{JS: ! %{is-extended-layouts-list} }",
+                    "visible": "%{JS: ! %{is-app} }",
                     "data":
                     {
                         "items": [
                             {
-                                "trKey": "Modified pitchfork",
-                                "value": "modified pitchfork",
-                                "trToolTip": "CMake project based on pitchfork layout"
+                                "trKey": "Canonical Project Structure",
+                                "value": "canonical",
+                                "trToolTip": "P1204 Canonical Project Structure"
                             },
                             {
-                                "trKey": "Pitchfork",
+                                "trKey": "The Pitchfork Layout",
                                 "value": "pitchfork",
-                                "trToolTip": "Pitchfork variation, keep headers and sources together in <project name> directory"
+                                "trToolTip": "The Pitchfork Layout"
                             }
                         ]
                     }
                 },
+
                 {
-                    "name": "workaround-spacer-1",
+                    "name": "non-app-project-layout-workaround-spacer",
                     "type": "Spacer",
-                    "visible": "%{JS: ! %{is-extended-layouts-list} }",
+                    "visible": "%{JS: ! %{is-app} }",
                     "data":
                     {
                         "factor": 2
                     }
                 },
+
+
+
+
+                {
+                    "name": "additional-pitchfork-options-label",
+                    "type": "Label",
+                    "span": false,
+                    "visible": "%{is-hybrid-pitchfork}",
+                    "data":
+                    {
+                        "wordWrap": true,
+                        "trText": "Application layout style"
+                    }
+                },
+                {
+                    "name": "additional-pitchfork-options",
+                    "trDisplayName": "",
+                    "type": "ComboBox",
+                    "visible": "%{is-hybrid-pitchfork}",
+                    "data":
+                    {
+                        "items": [
+                            {
+                                "trKey": "The \"submodule\" layout",
+                                "value": "submodule",
+                                "trToolTip": "Keep standalone apps in <root>/apps/name/*, \"backend\" code in <root>/apps/name/* and <root>/src/*. E.g. <root>/apps/name/readme.md + <root>/apps/name/src/main.cpp"
+                            },
+                            {
+                                "trKey": "Application entrypoints in apps/",
+                                "value": "apps",
+                                "trToolTip": "Keep single-file apps as <root>/apps/name.cpp, \"backend\" in <root>/src/*"
+                            },
+                            {
+                                "trKey": "The \"designated\" layout",
+                                "value": "designated",
+                                "trToolTip": "Keep apps as <root>/apps/name.main.cpp + <root>/apps/name/*, \"backend\" code in <root>/src/*"
+                            },
+                            {
+                                "trKey": "Application entrypoints in src/",
+                                "value": "src",
+                                "trToolTip": "Keep single-file apps as <root>/src/name.main.cpp, \"backend\" in <root>/src/name/*"
+                            }
+                        ]
+                    }
+                },
+
+
+                {
+                    "name": "additional-layout-options-workaround-spacer-dummy",
+                    "type": "Spacer",
+                    "visible": "%{is-hybrid-pitchfork}",
+                    "data":
+                    {
+                        "factor": 2
+                    }
+                },
+
+
+
+                {
+                    "name": "std-spacer",
+                    "type": "Spacer",
+                    "data":
+                    {
+                        "factor": 2
+                    }
+                },
+
+
+
                 {
                     "name": "cpp-std-label",
                     "type": "Label",
@@ -282,7 +410,7 @@
                     "data":
                     {
                         "wordWrap": true,
-                        "trText": "Choose your c++ standard"
+                        "trText": "Choose your C++ standard"
                     }
                 },
                 {
@@ -344,15 +472,16 @@
                         "uncheckedValue": "",
                         "checked": "false"
                     }
-                },
-                {
-                    "name": "common-libs-spacer",
-                    "type": "Spacer",
-                    "data":
-                    {
-                        "factor": 1
-                    }
-                },
+                }
+
+            ]
+        },
+        {
+            "trDisplayName": "Most popular libraries",
+            "trShortTitle": "Some of most popular libraries",
+            "typeId": "Fields",
+            "data":
+            [
                 {
                     "name": "common-libs-label",
                     "type": "Label",
@@ -607,8 +736,9 @@
                 },
                 {
                     "source": "main.cpp",
-                    "target": "%{main-location}",
-                    "openInEditor": true
+                    "target": "%{main-path}",
+                    "openInEditor": true,
+                    "condition": "%{JS: value('project-type') === 'application' || value('project-type') === 'hybrid project' }"
                 },
                 {
                     "source": "conanfile.txt",

@@ -13,7 +13,7 @@ add_executable(${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 
-set(SOURCES %{main-location})
+set(SOURCES %{main-path})
 
 target_sources(
     ${PROJECT_NAME}
