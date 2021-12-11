@@ -1,0 +1,14 @@
+[requires]
+%{JS:
+    %{packages}
+    .map(x =>
+        value("find-" + x["conan-name"])
+            && x["conan-name"] + "/" + x["conan-version"])
+    .filter(Boolean)
+    .join("\\n")
+}
+
+[generators]
+cmake_find_package
+
+

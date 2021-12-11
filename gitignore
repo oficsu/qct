@@ -1,0 +1,70 @@
+# Git mergetool backup files
+*.orig
+
+# Desktop enviroment files
+.directory
+
+# Temporary files
+*.kate-swp*
+*.autosave
+
+
+## IDE and editors
+
+*~
+
+# vim
+.*un~
+
+# KDevelop
+*.kdev4
+
+# Qt Creator
+*CMakeLists.txt.*
+*.user
+
+# Visual Studio 2015 cache/options directory
+.vs/
+
+
+## Build or install in-source directories
+
+# CMake file API
+.cmake/*
+
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Xx]64/
+[Xx]86/
+[Bb]uild/
+.[Bb]uild/
+[Bb]uilds/
+.[Bb]uilds/
+bld/
+[Bb]in/
+[Oo]bj/
+[Dd]ebugPS/
+[Rr]eleasePS/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Microsoft Azure Build Output
+csx/
+*.build.csdef
+
+
+## Cache
+
+# Visual C++ cache files
+ipch/
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db

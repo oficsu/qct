@@ -1,0 +1,626 @@
+{
+    "version": 1,
+    "supportedProjectTypes": [ "CMakeProjectManager.CMakeProject" ],
+    "id": "A.Custom Cpp Application",
+    "category": "I.Projects",
+    "trDescription": "Creates a customizable C++ application",
+    "trDisplayName": "C++ Application",
+    "trDisplayCategory": "C++ Project",
+    "icon": "/usr/share/qtcreator/templates/wizards/global/consoleapplication.png",
+    "enabled": "%{JS: value('Plugins').indexOf('CppEditor') >= 0 && value('Plugins').indexOf('CMakeProjectManager') >= 0 }",
+
+    "options":
+    [
+        { "key": "main-name", "value": "%{JS: 'main.' + Util.preferredSuffix('text/x-c++src')}" },
+        {
+            "key": "main-location",
+            "value": "%{JS:
+                value('project-layout') == 'simple'
+                        ? '%{main-name}'
+                        : value('project-layout') == 'canonical project structure'
+                            ? '%{ProjectName}/' + '%{main-name}'
+                            : 'src/' + '%{main-name}'
+            }"
+        },
+        { "key": "is-extended-layouts-list", "value": "%{JS: value('project-type') === 'application' }" },
+        {
+            "key": "project-layout",
+            "value": "%{JS: %{is-extended-layouts-list}
+                          ? value('project-layout-1')
+                          : value('project-layout-2')
+                     }"
+        },
+        { "key": "packages", "value": "%{JS: JSON.stringify([
+            \\{
+              'conan-name':    'fmt',
+              'conan-version': '8.0.1',
+              'cmake-name':    'fmt',
+              'target-name':   'fmt::fmt'
+            \\},
+            \\{
+              'conan-name':    'range-v3',
+              'conan-version': '0.11.0',
+              'cmake-name':    'range-v3',
+              'target-name':   'range-v3::range-v3'
+            \\},
+            \\{
+              'conan-name':    'boost',
+              'conan-version': '1.77.0',
+              'cmake-name':    'Boost',
+              'target-name':   '%{JS: JSON.parse(JSON.stringify(value(\"boost-components\"))).split(\" \").map(x => \"Boost::\" + x).join(\" \") }'
+            \\},
+            \\{
+              'conan-name':    'tl-expected',
+              'conan-version': '1.0.0',
+              'cmake-name':    'tl-expected',
+              'target-name':   'tl::expected'
+            \\},
+            \\{
+              'conan-name':    'tl-optional',
+              'conan-version': '1.0.0',
+              'cmake-name':    'tl-optional',
+              'target-name':   'tl::optional'
+            \\},
+            \\{
+              'conan-name':    'openssl',
+              'conan-version': '1.1.1k',
+              'cmake-name':    'OpenSSL',
+              'target-name':   'OpenSSL::SSL OpenSSL::Crypto'
+            \\},
+            \\{
+              'conan-name':    'restinio',
+              'conan-version': '0.6.13',
+              'cmake-name':    'RESTinio',
+              'target-name':   'restinio::restinio'
+            \\},
+            \\{
+              'conan-name':    'spdlog',
+              'conan-version': '1.9.2',
+              'cmake-name':    'spdlog',
+              'target-name':   'spdlog::spdlog'
+            \\},
+            \\{
+              'conan-name':    'rapidjson',
+              'conan-version': '1.1.0',
+              'cmake-name':    'RapidJSON',
+              'target-name':   'rapidjson'
+            \\},
+            \\{
+              'conan-name':    'amqp-cpp',
+              'conan-version': '4.3.11',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\},
+            \\{
+              'conan-name':    'libpq',
+              'conan-version': '13.3',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\},
+            \\{
+              'conan-name':    'libpqxx',
+              'conan-version': '7.6.0',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\},
+            \\{
+              'conan-name':    'lz4',
+              'conan-version': '1.9.3',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\},
+            \\{
+              'conan-name':    'zstd',
+              'conan-version': '1.5.0',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\},
+            \\{
+              'conan-name':    'tomlplusplus',
+              'conan-version': '2.5.0',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\},
+            \\{
+              'conan-name':    'jwt-cpp',
+              'conan-version': '0.5.0',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\},
+            \\{
+              'conan-name':    'msgpack',
+              'conan-version': '3.3.0',
+              'cmake-name':    '',
+              'target-name':   ''
+            \\}
+        ]) }" }
+    ],
+    "pages":
+    [
+        {
+            "trDisplayName": "Project location",
+            "trShortTitle": "Location",
+            "typeId": "Project"
+        },
+        {
+            "trDisplayName": "Common project settings",
+            "trShortTitle": "Common settings",
+            "typeId": "Fields",
+            "data": [
+                {
+                    "name": "project-type-label",
+                    "type": "Label",
+                    "span": false,
+                    "data":
+                    {
+                        "wordWrap": true,
+                        "trText": "Choose your project type"
+                    }
+                },
+                {
+                    "name": "project-type",
+                    "trDisplayName": "",
+                    "type": "ComboBox",
+                    "data":
+                    {
+                        "items": [
+                            {
+                                "trKey": "Application",
+                                "value": "application",
+                                "trToolTip": "Executable application"
+                            },
+                            {
+                                "trKey": "Library",
+                                "value": "binary library",
+                                "trToolTip": "prepare binary library"
+                            },
+                            {
+                                "trKey": "Header-only library",
+                                "value": "header-only",
+                                "trToolTip": "Prepare header-only library"
+                            },
+                            {
+                                "trKey": "Super project",
+                                "value": "super project",
+                                "trToolTip": "Super project with lots of modules"
+                            }
+                        ],
+                        "disabledIndex": 0
+                    }
+                },
+                {
+                    "name": "workaround-spacer-1",
+                    "type": "Spacer",
+                    "visible": "%{is-extended-layouts-list}",
+                    "data":
+                    {
+                        "factor": 2
+                    }
+                },
+                {
+                    "name": "project-layout-label-1",
+                    "type": "Label",
+                    "span": false,
+                    "visible": "%{is-extended-layouts-list}",
+                    "data":
+                    {
+                        "wordWrap": true,
+                        "trText": "Choose your project layout"
+                    }
+                },
+                {
+                    "name": "project-layout-1",
+                    "trDisplayName": "",
+                    "type": "ComboBox",
+                    "visible": "%{is-extended-layouts-list}",
+                    "data":
+                    {
+                        "items": [
+                            {
+                                "trKey": "Simple",
+                                "value": "simple",
+                                "trToolTip": "Minimalistic hello-world cmake project"
+                            },
+                            {
+                                "trKey": "Canonical Project Structure",
+                                "value": "canonical project structure",
+                                "trToolTip": "P1204 Canonical Project Structure"
+                            },
+                            {
+                                "trKey": "Pitchfork",
+                                "value": "pitchfork",
+                                "trToolTip": "Pitchfork variation, keep headers and sources together in <project name> directory"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "project-layout-label-2",
+                    "type": "Label",
+                    "span": false,
+                    "visible": "%{JS: ! %{is-extended-layouts-list} }",
+                    "data":
+                    {
+                        "wordWrap": true,
+                        "trText": "Choose your project layout"
+                    }
+                },
+                {
+                    "name": "project-layout-2",
+                    "trDisplayName": "",
+                    "type": "ComboBox",
+                    "visible": "%{JS: ! %{is-extended-layouts-list} }",
+                    "data":
+                    {
+                        "items": [
+                            {
+                                "trKey": "Modified pitchfork",
+                                "value": "modified pitchfork",
+                                "trToolTip": "CMake project based on pitchfork layout"
+                            },
+                            {
+                                "trKey": "Pitchfork",
+                                "value": "pitchfork",
+                                "trToolTip": "Pitchfork variation, keep headers and sources together in <project name> directory"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "workaround-spacer-1",
+                    "type": "Spacer",
+                    "visible": "%{JS: ! %{is-extended-layouts-list} }",
+                    "data":
+                    {
+                        "factor": 2
+                    }
+                },
+                {
+                    "name": "cpp-std-label",
+                    "type": "Label",
+                    "span": false,
+                    "data":
+                    {
+                        "wordWrap": true,
+                        "trText": "Choose your c++ standard"
+                    }
+                },
+                {
+                    "name": "cpp-std",
+                    "trDisplayName": "",
+                    "type": "ComboBox",
+                    "data":
+                    {
+                        "items": [
+                            {
+                                "trKey": "C++23",
+                                "value": "23"
+                            },
+                            {
+                                "trKey": "C++20",
+                                "value": "20"
+                            },
+                            {
+                                "trKey": "C++17",
+                                "value": "17"
+                            },
+                            {
+                                "trKey": "C++14",
+                                "value": "14"
+                            },
+                            {
+                                "trKey": "C++11",
+                                "value": "11"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "yet-another-spacer",
+                    "type": "Spacer",
+                    "data":
+                    {
+                        "factor": 1
+                    }
+                },
+                {
+                    "name": "use-conan",
+                    "trDisplayName": "Use Conan package manager",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "add-readme",
+                    "trDisplayName": "Add empty readme.md to project",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "common-libs-spacer",
+                    "type": "Spacer",
+                    "data":
+                    {
+                        "factor": 1
+                    }
+                },
+                {
+                    "name": "common-libs-label",
+                    "type": "Label",
+                    "span": false,
+                    "data":
+                    {
+                        "wordWrap": true,
+                        "trText": "You can add some popular C++ libraries to project"
+                    }
+                },
+                {
+                    "name": "find-fmt",
+                    "trDisplayName": "Add {fmt}",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-range-v3",
+                    "trDisplayName": "Add Range-v3",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-boost",
+                    "trDisplayName": "Add Boost",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-boost-label",
+                    "type": "Label",
+                    "enabled": "%{JS: value('find-boost') }",
+                    "span": false,
+                    "data":
+                    {
+                        "wordWrap": true,
+                        "trText": "Add Boost cmake components, e.g. \"headers serialization program_options\""
+                    }
+                },
+                {
+                    "name": "boost-components",
+                    "type": "LineEdit",
+                    "trDisplayName": "",
+                    "enabled": "%{JS: value('find-boost') }",
+                    "mandatory": "%{JS: value('find-boost') }",
+                    "data": {
+                        "validator": "((boost|headers|atomic|chrono|container|date_time|filesystem|graph|locale|log|log_setup|math_c99|math_c99f|math_c99l|math_tr1|math_tr1f|math_tr1l|nowide|prg_exec_monitor|program_options|random|regex|serialization|stacktrace_addr2line|stacktrace_backtrace|stacktrace_basic|stacktrace_noop|system|test_exec_monitor|thread|timer|type_erasure|unit_test_framework|wserialization) ?)+",
+                        "trText": "headers"
+                    }
+                }
+            ]
+        },
+        {
+            "trDisplayName": "Libraries",
+            "trShortTitle": "Libraries",
+            "typeId": "Fields",
+            "data":
+            [
+                {
+                    "name": "find-tl-expected",
+                    "trDisplayName": "Add TartanLlama/expected",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-tl-optional",
+                    "trDisplayName": "Add TartanLlama/optional",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-openssl",
+                    "trDisplayName": "Add OpenSSL",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-restinio",
+                    "trDisplayName": "Add RESTinio",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-spdlog",
+                    "trDisplayName": "Add spdlog",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-rapidjson",
+                    "trDisplayName": "Add RapidJSON",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-amqp-cpp",
+                    "trDisplayName": "Add AMQP-CPP",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-libpq",
+                    "trDisplayName": "Add libpq",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-libpqxx",
+                    "trDisplayName": "Add libpqxx",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-lz4",
+                    "trDisplayName": "Add LZ4",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-zstd",
+                    "trDisplayName": "Add Zstd",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-tomlplusplus",
+                    "trDisplayName": "Add toml++",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-jwt-cpp",
+                    "trDisplayName": "Add JWT++",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                },
+                {
+                    "name": "find-msgpack",
+                    "trDisplayName": "Add MessagePack",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "true",
+                        "uncheckedValue": "",
+                        "checked": "false"
+                    }
+                }
+            ]
+        },
+        {
+            "trDisplayName": "Kit Selection",
+            "trShortTitle": "Kits",
+            "typeId": "Kits",
+            "enabled": "%{JS: ! %{IsSubproject}}",
+            "data": { "projectFilePath": "%{ProjectDirectory}/CMakeLists.txt" }
+        },
+        {
+            "trDisplayName": "Project Management",
+            "trShortTitle": "Summary",
+            "typeId": "Summary"
+        }
+    ],
+    "generators":
+    [
+        {
+            "typeId": "File",
+            "data":
+            [
+                {
+                    "source": "CMakeLists.txt",
+                    "openAsProject": true
+                },
+                {
+                    "source": "main.cpp",
+                    "target": "%{main-location}",
+                    "openInEditor": true
+                },
+                {
+                    "source": "conanfile.txt",
+                    "target": "conanfile.txt",
+                    "condition": "%{JS: value('use-conan') }"
+                },
+                {
+                    "source": "gitignore",
+                    "target": ".gitignore",
+                    "condition": "%{JS: ! %{IsSubproject} && '%{VersionControl}' === 'G.Git'}"
+                }
+            ]
+        }
+    ]
+}
