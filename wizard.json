@@ -378,22 +378,63 @@
                             {
                                 "trKey": "The \"submodule\" layout",
                                 "value": "submodule",
-                                "trToolTip": "Keep standalone apps in <root>/apps/name/*, \"backend\" code in <root>/apps/name/* and <root>/src/*. E.g. <root>/apps/name/readme.md + <root>/apps/name/src/main.cpp"
+                                "trToolTip": "
+<root-or-submodule>
+│
+├─ apps/
+│  ├─ foo/               <- Generates foo.exe
+│  │  └─ src/
+│  │     └ foo.main.cpp
+│  │
+│  └─ bar/               <- Generates bar.exe
+│     └─ src/
+│        ├ bar.main.hpp
+│        └ stuff.cpp     <- Support code for bar.exe
+│
+└─ src/                  <- #include and link into all `apps/` code
+   └ <backend code...>"
                             },
                             {
                                 "trKey": "The \"simple\" layout",
                                 "value": "simple",
-                                "trToolTip": "Keep single-file apps as <root>/apps/name.cpp, \"backend\" in <root>/src/*"
+                                "trToolTip": "
+<root-or-submodule>
+│
+├─ apps/
+│  ├ foo.cpp  <- Generates foo.exe
+│  ├ bar.cpp  <- Generates bar.exe
+│  └ baz.cpp  <- Generates baz.exe
+│
+└─ src/       <- #include and link into `apps/` code
+   └ <backend code...>"
                             },
                             {
-                                "trKey": "The \"designated\" layout",
+                                "trKey": "The \"designated\" layout at apps/",
                                 "value": "designated",
-                                "trToolTip": "Keep apps as <root>/apps/name.main.cpp + <root>/apps/name/*, \"backend\" code in <root>/src/*"
+                                "trToolTip": "
+<root-or-submodule>
+│
+├─ apps/               <- #include for everything in `apps/`
+│  ├ foo.main.cpp      <- Generates foo.exe
+│  └ foo_stuff/
+│    ├ cli_parser.hpp  <- Entrypoint code. Linked into `foo.exe`
+│    └ cli_parser.cpp  <- ''
+│
+└─ src/                <- #include and link into all `apps/` code
+   └ <backend code...>"
                             },
                             {
                                 "trKey": "The \"designated\" layout at src/",
                                 "value": "designated-at-src",
-                                "trToolTip": "Keep single-file apps as <root>/src/name.main.cpp, \"backend\" in <root>/src/name/*"
+                                "trToolTip": "
+<root-or-submodule>
+│
+└─ src/
+   ├ something.main.cpp  <- Generates something.exe
+   ├ meow.main.cpp       <- Generates meow.exe
+   └ my_lib/             <- \"backend\" code
+     ├ my_lib.hpp
+     └ my_lib.cpp"
                             }
                         ]
                     }
