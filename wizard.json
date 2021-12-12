@@ -12,6 +12,18 @@
     "options":
     [
         {
+            "key": "is-app",
+            "value": "%{JS: value('project-type') === 'application' }"
+        },
+        {
+            "key": "project-layout",
+            "value": "%{JS:
+                %{is-app}
+                    ? value('app-project-layout')
+                    : value('non-app-project-layout')
+            }"
+        },
+        {
             "key": "is-hybrid-pitchfork",
             "value": "%{JS:
                 value('project-layout') === 'pitchfork' &&
@@ -42,6 +54,19 @@
                       : value('project-type') == 'application'
                           ? ''
                           : '__NOT_MODULE__'
+            }"
+        },
+         {
+            "key": "app-module-path",
+            "value": "%{JS:
+                value('project-layout') === 'pitchfork'
+                    ? value('pitchfork-module-path')
+                    : value('project-layout') === 'canonical'
+                        ? value('canonical-module-path')
+                        : value('project-layout') === 'simple'
+                            ? ''
+                            : 'LOGIC ERROR: UNEXPECTED PROJECT LAYOUT'
+
             }"
         },
         {
@@ -91,118 +116,111 @@
             "key": "main-path",
             "value": "%{JS: '%{main-location}' + '%{main-name}' }"
         },
-        { "key": "is-app", "value": "%{JS: value('project-type') === 'application' }" },
         {
-            "key": "project-layout",
-            "value": "%{JS:
-                %{is-app}
-                    ? value('app-project-layout')
-                    : value('non-app-project-layout')
-            }"
-        },
-        { "key": "packages", "value": "%{JS: JSON.stringify([
-            \\{
-              'conan-name':    'fmt',
-              'conan-version': '8.0.1',
-              'cmake-name':    'fmt',
-              'target-name':   'fmt::fmt'
-            \\},
-            \\{
-              'conan-name':    'range-v3',
-              'conan-version': '0.11.0',
-              'cmake-name':    'range-v3',
-              'target-name':   'range-v3::range-v3'
-            \\},
-            \\{
-              'conan-name':    'boost',
-              'conan-version': '1.77.0',
-              'cmake-name':    'Boost',
-              'target-name':   '%{JS: JSON.parse(JSON.stringify(value(\"boost-components\"))).split(\" \").map(x => \"Boost::\" + x).join(\" \") }'
-            \\},
-            \\{
-              'conan-name':    'tl-expected',
-              'conan-version': '1.0.0',
-              'cmake-name':    'tl-expected',
-              'target-name':   'tl::expected'
-            \\},
-            \\{
-              'conan-name':    'tl-optional',
-              'conan-version': '1.0.0',
-              'cmake-name':    'tl-optional',
-              'target-name':   'tl::optional'
-            \\},
-            \\{
-              'conan-name':    'openssl',
-              'conan-version': '1.1.1k',
-              'cmake-name':    'OpenSSL',
-              'target-name':   'OpenSSL::SSL OpenSSL::Crypto'
-            \\},
-            \\{
-              'conan-name':    'restinio',
-              'conan-version': '0.6.13',
-              'cmake-name':    'RESTinio',
-              'target-name':   'restinio::restinio'
-            \\},
-            \\{
-              'conan-name':    'spdlog',
-              'conan-version': '1.9.2',
-              'cmake-name':    'spdlog',
-              'target-name':   'spdlog::spdlog'
-            \\},
-            \\{
-              'conan-name':    'rapidjson',
-              'conan-version': '1.1.0',
-              'cmake-name':    'RapidJSON',
-              'target-name':   'rapidjson'
-            \\},
-            \\{
-              'conan-name':    'amqp-cpp',
-              'conan-version': '4.3.11',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\},
-            \\{
-              'conan-name':    'libpq',
-              'conan-version': '13.3',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\},
-            \\{
-              'conan-name':    'libpqxx',
-              'conan-version': '7.6.0',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\},
-            \\{
-              'conan-name':    'lz4',
-              'conan-version': '1.9.3',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\},
-            \\{
-              'conan-name':    'zstd',
-              'conan-version': '1.5.0',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\},
-            \\{
-              'conan-name':    'tomlplusplus',
-              'conan-version': '2.5.0',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\},
-            \\{
-              'conan-name':    'jwt-cpp',
-              'conan-version': '0.5.0',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\},
-            \\{
-              'conan-name':    'msgpack',
-              'conan-version': '3.3.0',
-              'cmake-name':    '',
-              'target-name':   ''
-            \\}
+            "key": "packages",
+            "value": "%{JS: JSON.stringify([
+                \\{
+                'conan-name':    'fmt',
+                'conan-version': '8.0.1',
+                'cmake-name':    'fmt',
+                'target-name':   'fmt::fmt'
+                \\},
+                \\{
+                'conan-name':    'range-v3',
+                'conan-version': '0.11.0',
+                'cmake-name':    'range-v3',
+                'target-name':   'range-v3::range-v3'
+                \\},
+                \\{
+                'conan-name':    'boost',
+                'conan-version': '1.77.0',
+                'cmake-name':    'Boost',
+                'target-name':   '%{JS: JSON.parse(JSON.stringify(value(\"boost-components\"))).split(\" \").map(x => \"Boost::\" + x).join(\" \") }'
+                \\},
+                \\{
+                'conan-name':    'tl-expected',
+                'conan-version': '1.0.0',
+                'cmake-name':    'tl-expected',
+                'target-name':   'tl::expected'
+                \\},
+                \\{
+                'conan-name':    'tl-optional',
+                'conan-version': '1.0.0',
+                'cmake-name':    'tl-optional',
+                'target-name':   'tl::optional'
+                \\},
+                \\{
+                'conan-name':    'openssl',
+                'conan-version': '1.1.1k',
+                'cmake-name':    'OpenSSL',
+                'target-name':   'OpenSSL::SSL OpenSSL::Crypto'
+                \\},
+                \\{
+                'conan-name':    'restinio',
+                'conan-version': '0.6.13',
+                'cmake-name':    'RESTinio',
+                'target-name':   'restinio::restinio'
+                \\},
+                \\{
+                'conan-name':    'spdlog',
+                'conan-version': '1.9.2',
+                'cmake-name':    'spdlog',
+                'target-name':   'spdlog::spdlog'
+                \\},
+                \\{
+                'conan-name':    'rapidjson',
+                'conan-version': '1.1.0',
+                'cmake-name':    'RapidJSON',
+                'target-name':   'rapidjson'
+                \\},
+                \\{
+                'conan-name':    'amqp-cpp',
+                'conan-version': '4.3.11',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\},
+                \\{
+                'conan-name':    'libpq',
+                'conan-version': '13.3',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\},
+                \\{
+                'conan-name':    'libpqxx',
+                'conan-version': '7.6.0',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\},
+                \\{
+                'conan-name':    'lz4',
+                'conan-version': '1.9.3',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\},
+                \\{
+                'conan-name':    'zstd',
+                'conan-version': '1.5.0',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\},
+                \\{
+                'conan-name':    'tomlplusplus',
+                'conan-version': '2.5.0',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\},
+                \\{
+                'conan-name':    'jwt-cpp',
+                'conan-version': '0.5.0',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\},
+                \\{
+                'conan-name':    'msgpack',
+                'conan-version': '3.3.0',
+                'cmake-name':    '',
+                'target-name':   ''
+                \\}
         ]) }" }
     ],
     "pages":
@@ -796,10 +814,25 @@
                     "openAsProject": true
                 },
                 {
+                    "source": "app-readme.md",
+                    "target": "%{JS: value('app-module-path') + 'readme.md' }",
+                    "condition": "%{JS:
+                        value('add-readme') && value('app-module-path') !== '__NOT_MODULE__'
+                    }"
+                },
+                {
+                    "source": "project-readme.md",
+                    "target": "readme.md",
+                    "condition": "%{JS: value('add-readme') && value('project-type') === 'hybrid project' }"
+                },
+                {
                     "source": "main.cpp",
                     "target": "%{main-path}",
                     "openInEditor": true,
-                    "condition": "%{JS: value('project-type') === 'application' || value('project-type') === 'hybrid project' }"
+                    "condition": "%{JS:
+                        ( value('project-type') === 'application' ||
+                          value('project-type') === 'hybrid project' )
+                    }"
                 },
                 {
                     "source": "conanfile.txt",

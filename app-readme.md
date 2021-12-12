@@ -1,0 +1,4 @@
+The %{ProjectName} application
+------------------------------
+
+# <Summary>
