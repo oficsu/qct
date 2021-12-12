@@ -19,49 +19,54 @@
             }"
         },
         {
-            "key": "is-designated-name",
-            "value": "%{JS:
-                %{is-hybrid-pitchfork} &&
-                ( value('additional-pitchfork-options') == 'designated' ||
-                  value('additional-pitchfork-options') == 'src')
-            }"
-        },
-
-        {
             "key": "canonical-module-path",
             "value": "%{JS:
-                value('project-type') == 'application'
-                        ? '%{ProjectName}/main'
-                        : 'apps/%{ProjectName}/main'
+                value('project-type') === 'hybrid project'
+                        ? 'apps/%{ProjectName}/'
+                        : value('project-type') === 'application'
+                            ? ''
+                            : 'LOGIC ERROR: MAIN IS NOT ALLOWED IN LIBRARY-ONLY PROJECT TYPES'
+            }"
+        },
+        {
+            "key": "canonical-main-location",
+            "value": "%{JS: value('canonical-module-path') + '%{ProjectName}/'
             }"
         },
         {
             "key": "pitchfork-module-path",
             "value": "%{JS:
-                value('project-type') == 'application'
-                        ? 'src/main'
-                        : value('project-type') != 'hybrid project'
-                            ? 'LOGIC ERROR: MAIN IS NOT ALLOWED IN LIBRARY-ONLY PROJECT TYPES'
-                            : value('additional-pitchfork-options') == 'submodule'
-                                ? 'apps/%{ProjectName}/src/main'
-                                : value('additional-pitchfork-options') == 'apps'
-                                    ? 'apps/%{ProjectName}'
-                                    : value('additional-pitchfork-options') == 'designated'
-                                        ? 'apps/%{ProjectName}.main'
-                                        : value('additional-pitchfork-options') == 'src'
-                                            ? 'src/%{ProjectName}.main'
-                                            : 'LOGIC ERROR: UNEXPECTED MODULE PATH'
+                ( value('project-type') === 'hybrid project' &&
+                  value('additional-pitchfork-options') == 'submodule' )
+                      ? 'apps/%{ProjectName}/'
+                      : value('project-type') == 'application'
+                          ? ''
+                          : '__NOT_MODULE__'
             }"
         },
         {
-            "key": "main-cpp-prefix",
+            "key": "pitchfork-main-location",
+            "value": "%{JS:
+                value('pitchfork-module-path') !== '__NOT_MODULE__'
+                    ? value('pitchfork-module-path') + 'src/'
+                    : value('additional-pitchfork-options') === 'designated-at-src'
+                        ? 'src/'
+                        : ( value('additional-pitchfork-options') === 'designated' ||
+                            value('additional-pitchfork-options') === 'simple' )
+                              ? 'apps/'
+                              : 'LOGIC ERROR: UNEXPECTED PITCHFORK ADDITIONAL OPTIONS'
+
+            }"
+        },
+        {
+            "key": "main-location",
             "value": "%{JS:
                 value('project-layout') == 'simple' && value('project-type') == 'application'
-                        ? 'main'
+                        ? ''
                         : value('project-layout') == 'canonical'
-                            ? '%{canonical-module-path}'
+                            ? '%{canonical-main-location}'
                             : value('project-layout') == 'pitchfork'
-                                ? '%{pitchfork-module-path}'
+                                ? '%{pitchfork-main-location}'
                                 : 'LOGIC ERROR: UNEXPECTED PROJECT LAYOUT'
             }"
         },
@@ -69,16 +74,31 @@
             "key": "main-ext", "value": "%{JS: '.' + Util.preferredSuffix('text/x-c++src') }"
         },
         {
+            "key": "main-name", "value": "%{JS:
+                ( ( value('project-type') != 'hybrid project' ||
+                    value('additional-pitchfork-options') == 'submodule' )
+                        ? 'main'
+                        : value('additional-pitchfork-options') == 'simple'
+                            ? '%{ProjectName}'
+                            : ( value('additional-pitchfork-options') == 'designated' ||
+                                value('additional-pitchfork-options') == 'designated-at-src' )
+                                ? '%{ProjectName}.main'
+                                : 'LOGIC ERROR: UNEXPECTED PITCHFORK ADDITIONAL OPTIONS')
+                + '%{main-ext}'
+            }"
+        },
+        {
             "key": "main-path",
-            "value": "%{JS: '%{main-cpp-prefix}' + '%{main-ext}' }"
+            "value": "%{JS: '%{main-location}' + '%{main-name}' }"
         },
         { "key": "is-app", "value": "%{JS: value('project-type') === 'application' }" },
         {
             "key": "project-layout",
-            "value": "%{JS: %{is-app}
-                          ? value('app-project-layout')
-                          : value('non-app-project-layout')
-                     }"
+            "value": "%{JS:
+                %{is-app}
+                    ? value('app-project-layout')
+                    : value('non-app-project-layout')
+            }"
         },
         { "key": "packages", "value": "%{JS: JSON.stringify([
             \\{
@@ -361,8 +381,8 @@
                                 "trToolTip": "Keep standalone apps in <root>/apps/name/*, \"backend\" code in <root>/apps/name/* and <root>/src/*. E.g. <root>/apps/name/readme.md + <root>/apps/name/src/main.cpp"
                             },
                             {
-                                "trKey": "Application entrypoints in apps/",
-                                "value": "apps",
+                                "trKey": "The \"simple\" layout",
+                                "value": "simple",
                                 "trToolTip": "Keep single-file apps as <root>/apps/name.cpp, \"backend\" in <root>/src/*"
                             },
                             {
@@ -371,8 +391,8 @@
                                 "trToolTip": "Keep apps as <root>/apps/name.main.cpp + <root>/apps/name/*, \"backend\" code in <root>/src/*"
                             },
                             {
-                                "trKey": "Application entrypoints in src/",
-                                "value": "src",
+                                "trKey": "The \"designated\" layout at src/",
+                                "value": "designated-at-src",
                                 "trToolTip": "Keep single-file apps as <root>/src/name.main.cpp, \"backend\" in <root>/src/name/*"
                             }
                         ]
